@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -23,15 +23,14 @@ import (
 // inCmd represents the in command
 var inCmd = &cobra.Command{
 	Use:   "in",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Add a task for the current day",
+	Long: `Enters a task for the current day by local time. This is the primary function of stanD.
+	Example:
+	
+	standD in Draft grocery list.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("in called")
+		taskBody := strings.Join(args, " ")
+		state.AddTask(taskBody)
 	},
 }
 
