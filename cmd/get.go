@@ -36,7 +36,7 @@ stanD get -1 # Gives tasks recorded 2 days ago`,
 			err    error
 		)
 		if len(args) <= 0 {
-			offset = -1
+			offset = 1
 		} else {
 			offset, err = strconv.Atoi(args[0])
 			if err != nil {
