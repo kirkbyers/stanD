@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -81,33 +80,37 @@ func (s *State) AddTask(body string) (err error) {
 		dayV := b.Get(dayK)
 		err = json.Unmarshal(dayV, &day)
 		if err != nil {
-			return err
+			day = Day{
+				Timestamp: now,
+				Tasks:     make([]Task, 0),
+			}
 		}
 		day.Tasks = append(day.Tasks, newTask)
 		dayUpdate, err := json.Marshal(day)
 		if err != nil {
 			return err
 		}
-		return b.Put([]byte(now.Format(("Jan 2 2006"))), dayUpdate)
+		return b.Put([]byte(now.Format("Jan 2 2006")), dayUpdate)
 	})
 }
 
 // GetDay gets task that were saved at the time stamp given
-func (s *State) GetDay(offset int64) (res Day, err error) {
-	if offset > 0 {
-		return res, errors.New("Offsets must be 0 or negative")
-	}
+func (s *State) GetDay(offset int) (res Day, err error) {
 	now := time.Now()
-	targetDate := now.Add(time.Minute * 60 * 24 * time.Duration(offset))
+	targetDate := now.Add(time.Minute * 60 * 24 * time.Duration(offset) * -1)
 	var dayV []byte
-	s.update(func(tx *bolt.Tx) (err error) {
+	err = s.update(func(tx *bolt.Tx) (err error) {
 		b := tx.Bucket(eventsBucket)
-		dayK := []byte(targetDate.Format(("Jan 2 2006")))
+		dayK := []byte(targetDate.Format("Jan 2 2006"))
 		dayV = b.Get(dayK)
+		if err = json.Unmarshal(dayV, &res); err != nil {
+			return err
+		}
 		return nil
 	})
-	if err = json.Unmarshal(dayV, &res); err != nil {
+	if err != nil {
 		return res, err
 	}
+
 	return res, err
 }
